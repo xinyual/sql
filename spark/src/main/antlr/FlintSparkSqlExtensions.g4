@@ -17,6 +17,8 @@ singleStatement
 statement
     : skippingIndexStatement
     | coveringIndexStatement
+    | materializedViewStatement
+    | indexJobManagementStatement
     ;
 
 skippingIndexStatement
@@ -30,6 +32,7 @@ createSkippingIndexStatement
     : CREATE SKIPPING INDEX (IF NOT EXISTS)?
         ON tableName
         LEFT_PAREN indexColTypeList RIGHT_PAREN
+        whereClause?
         (WITH LEFT_PAREN propertyList RIGHT_PAREN)?
     ;
 
@@ -57,6 +60,7 @@ createCoveringIndexStatement
     : CREATE INDEX (IF NOT EXISTS)? indexName
         ON tableName
         LEFT_PAREN indexColumns=multipartIdentifierPropertyList RIGHT_PAREN
+        whereClause?
         (WITH LEFT_PAREN propertyList RIGHT_PAREN)?
     ;
 
@@ -74,6 +78,60 @@ describeCoveringIndexStatement
 
 dropCoveringIndexStatement
     : DROP INDEX indexName ON tableName
+    ;
+
+materializedViewStatement
+    : createMaterializedViewStatement
+    | refreshMaterializedViewStatement
+    | showMaterializedViewStatement
+    | describeMaterializedViewStatement
+    | dropMaterializedViewStatement
+    ;
+
+createMaterializedViewStatement
+    : CREATE MATERIALIZED VIEW (IF NOT EXISTS)? mvName=multipartIdentifier
+        AS query=materializedViewQuery
+        (WITH LEFT_PAREN propertyList RIGHT_PAREN)?
+    ;
+
+refreshMaterializedViewStatement
+    : REFRESH MATERIALIZED VIEW mvName=multipartIdentifier
+    ;
+
+showMaterializedViewStatement
+    : SHOW MATERIALIZED (VIEW | VIEWS) IN catalogDb=multipartIdentifier
+    ;
+
+describeMaterializedViewStatement
+    : (DESC | DESCRIBE) MATERIALIZED VIEW mvName=multipartIdentifier
+    ;
+
+dropMaterializedViewStatement
+    : DROP MATERIALIZED VIEW mvName=multipartIdentifier
+    ;
+
+indexJobManagementStatement
+    : recoverIndexJobStatement
+    ;
+
+recoverIndexJobStatement
+    : RECOVER INDEX JOB identifier
+    ;
+
+/*
+ * Match all remaining tokens in non-greedy way
+ * so WITH clause won't be captured by this rule.
+ */
+materializedViewQuery
+    : .+?
+    ;
+
+whereClause
+    : WHERE filterCondition
+    ;
+
+filterCondition
+    : .+?
     ;
 
 indexColTypeList
