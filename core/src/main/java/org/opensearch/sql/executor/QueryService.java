@@ -8,6 +8,9 @@
 
 package org.opensearch.sql.executor;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -65,11 +68,13 @@ public class QueryService {
     try {
       try {
         // Use simple calcite schema since we don't compute tables in advance of the query.
-        CalciteSchema rootSchema = CalciteSchema.createRootSchema(true, false);
+        CalciteSchema rootSchema =  AccessController.doPrivileged((PrivilegedExceptionAction<CalciteSchema>) () -> CalciteSchema.createRootSchema(true, false));
+
         CalciteJdbc41Factory factory = new CalciteJdbc41Factory();
+
         CalciteConnection connection =
-            factory.newConnection(
-                new Driver(), factory, "", new java.util.Properties(), rootSchema, null);
+                AccessController.doPrivileged((PrivilegedExceptionAction<CalciteConnection>) () -> factory.newConnection(
+                        new Driver(), factory, "", new java.util.Properties(), rootSchema, null));
         final SchemaPlus defaultSchema =
             connection
                 .getRootSchema()
@@ -78,9 +83,9 @@ public class QueryService {
                     new OpenSearchSchema(dataSourceService));
         // Set opensearch schema as the default schema in config, otherwise we need to explicitly
         // add schema path 'OpenSearch' before the opensearch table name
-        final FrameworkConfig config = buildFrameworkConfig(defaultSchema);
-        final CalcitePlanContext context = new CalcitePlanContext(config, connection);
-        executePlanByCalcite(analyze(plan, context), context, listener);
+        final FrameworkConfig config = AccessController.doPrivileged((PrivilegedExceptionAction<FrameworkConfig>) () -> buildFrameworkConfig(defaultSchema));
+        final CalcitePlanContext context = AccessController.doPrivileged((PrivilegedExceptionAction<CalcitePlanContext>) () -> new CalcitePlanContext(config, connection));
+        AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {executePlanByCalcite(analyze(plan, context), context, listener); return null;});
       } catch (Exception e) {
         LOG.warn("Fallback to V2 query engine since got exception", e);
         executePlan(analyze(plan), PlanContext.emptyPlanContext(), listener);
@@ -119,7 +124,7 @@ public class QueryService {
   public void executePlanByCalcite(
       RelNode plan,
       CalcitePlanContext context,
-      ResponseListener<ExecutionEngine.QueryResponse> listener) {
+      ResponseListener<ExecutionEngine.QueryResponse> listener) throws PrivilegedActionException {
     try {
       executionEngine.execute(optimize(plan), context, listener);
     } catch (Exception e) {

@@ -13,6 +13,8 @@ grant {
   permission java.net.NetPermission "getProxySelector";
   permission java.net.SocketPermission "*", "accept,connect,resolve";
 
+  permission java.util.PropertyPermission "*","read,write";
+
   // ml-commons client
   permission java.lang.RuntimePermission "setContextClassLoader";
 
@@ -24,4 +26,8 @@ grant {
   permission javax.management.MBeanServerPermission "findMBeanServer";
   permission javax.management.MBeanPermission "com.amazonaws.metrics.*", "*";
   permission javax.management.MBeanTrustPermission "register";
+};
+
+grant codeBase "/Users/xinyual/.gradle/caches/modules-2/files-2.1/org.apache.calcite/calcite-core/1.38.0/f064c5304c5c24ff3387c4659d1a6e48f2757278/calcite-core-1.38.0.jar" {
+    permission java.lang.RuntimePermission "getClassLoader";
 };

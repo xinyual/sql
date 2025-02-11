@@ -5,6 +5,8 @@
 
 package org.opensearch.sql.opensearch.executor;
 
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.RelRunner;
 import org.opensearch.sql.calcite.CalcitePlanContext;
 import org.opensearch.sql.common.response.ResponseListener;
@@ -110,11 +113,13 @@ public class OpenSearchExecutionEngine implements ExecutionEngine {
       RelNode rel, CalcitePlanContext context, ResponseListener<QueryResponse> listener) {
     Connection connection = context.connection;
     try {
-      RelRunner runner = connection.unwrap(RelRunner.class);
-      PreparedStatement statement = runner.prepareStatement(rel);
-      ResultSet result = statement.executeQuery();
+      RelRunner runner = AccessController.doPrivileged((PrivilegedExceptionAction<RelRunner>) () -> connection.unwrap(RelRunner.class));
+      PreparedStatement statement = AccessController.doPrivileged((PrivilegedExceptionAction<PreparedStatement>) () ->
+              runner.prepareStatement(rel));
+      ResultSet result = AccessController.doPrivileged((PrivilegedExceptionAction<ResultSet>) () -> statement.executeQuery());
+
       printResultSet(result, listener);
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
