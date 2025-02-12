@@ -127,6 +127,39 @@ public class CalciteStandaloneIT extends PPLIntegTestCase {
         actual);
   }
 
+  @Test
+  public void testSourceFieldQuer1y() throws IOException {
+    Request request1 = new Request("PUT", "/test/_doc/1?refresh=true");
+    request1.setJsonEntity("{\"name\": \"hello\", \"age\": 20}");
+    client().performRequest(request1);
+    Request request2 = new Request("PUT", "/test/_doc/2?refresh=true");
+    request2.setJsonEntity("{\"name\": \"world\", \"age\": 30}");
+    client().performRequest(request2);
+
+    String actual = executeByStandaloneQueryEngine("source=test | where isnotnull(name) | fields name");
+
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"name\",\n"
+                    + "      \"type\": \"string\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      \"hello\"\n"
+                    + "    ],\n"
+                    + "    [\n"
+                    + "      \"world\"\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 2,\n"
+                    + "  \"size\": 2\n"
+                    + "}",
+            actual);
+  }
+
   private String executeByStandaloneQueryEngine(String query) {
     AtomicReference<String> actual = new AtomicReference<>();
     pplService.execute(

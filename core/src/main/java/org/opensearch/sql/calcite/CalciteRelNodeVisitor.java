@@ -89,10 +89,7 @@ public class CalciteRelNodeVisitor extends AbstractNodeVisitor<RelNode, CalciteP
   public RelNode visitFilter(Filter node, CalcitePlanContext context) {
     visitChildren(node, context);
     RexNode condition = rexVisitor.analyze(node.getCondition(), context);
-    AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {
-            context.relBuilder.filter(condition);
-            return null;
-    });
+    context.relBuilder.filter(condition);
     return context.relBuilder.peek();
   }
 
