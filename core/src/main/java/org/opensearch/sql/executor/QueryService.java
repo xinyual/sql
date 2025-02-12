@@ -8,20 +8,27 @@
 
 package org.opensearch.sql.executor;
 
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.calcite.jdbc.CalciteConnection;
 import org.apache.calcite.jdbc.CalciteJdbc41Factory;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.jdbc.Driver;
+import org.apache.calcite.linq4j.tree.Types;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.schema.ScalarFunction;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.impl.ScalarFunctionImpl;
 import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.sql.validate.SqlUserDefinedFunction;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
@@ -33,6 +40,8 @@ import org.opensearch.sql.ast.tree.UnresolvedPlan;
 import org.opensearch.sql.calcite.CalcitePlanContext;
 import org.opensearch.sql.calcite.CalciteRelNodeVisitor;
 import org.opensearch.sql.calcite.OpenSearchSchema;
+import org.opensearch.sql.calcite.udf.MyUdf1;
+import org.opensearch.sql.calcite.udf.allUDFs;
 import org.opensearch.sql.common.response.ResponseListener;
 import org.opensearch.sql.datasource.DataSourceService;
 import org.opensearch.sql.planner.PlanContext;
@@ -75,16 +84,19 @@ public class QueryService {
         CalciteConnection connection =
                 AccessController.doPrivileged((PrivilegedExceptionAction<CalciteConnection>) () -> factory.newConnection(
                         new Driver(), factory, "", new java.util.Properties(), rootSchema, null));
-        final SchemaPlus defaultSchema =
-            connection
-                .getRootSchema()
-                .add(
-                    OpenSearchSchema.OPEN_SEARCH_SCHEMA_NAME,
-                    new OpenSearchSchema(dataSourceService));
+        SchemaPlus defaultSchema = connection
+                .getRootSchema();
+
+        for (Map.Entry<String, Method> entry: allUDFs.ALLUDFS.entrySet()){
+          defaultSchema.add(entry.getKey(), AccessController.doPrivileged((PrivilegedExceptionAction<ScalarFunction>) () -> ScalarFunctionImpl.create(entry.getValue())) );
+        }
+        final SchemaPlus finalSchema = defaultSchema.add(
+                OpenSearchSchema.OPEN_SEARCH_SCHEMA_NAME,
+                new OpenSearchSchema(dataSourceService));
         // Set opensearch schema as the default schema in config, otherwise we need to explicitly
         // add schema path 'OpenSearch' before the opensearch table name
-        final FrameworkConfig config = AccessController.doPrivileged((PrivilegedExceptionAction<FrameworkConfig>) () -> buildFrameworkConfig(defaultSchema));
-        final CalcitePlanContext context = AccessController.doPrivileged((PrivilegedExceptionAction<CalcitePlanContext>) () -> new CalcitePlanContext(config, connection));
+        final FrameworkConfig config = AccessController.doPrivileged((PrivilegedExceptionAction<FrameworkConfig>) () -> buildFrameworkConfig(finalSchema));
+        final CalcitePlanContext context = new CalcitePlanContext(config, connection);
         AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {executePlanByCalcite(analyze(plan, context), context, listener); return null;});
       } catch (Exception e) {
         LOG.warn("Fallback to V2 query engine since got exception", e);

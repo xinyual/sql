@@ -12,11 +12,15 @@ import static org.opensearch.sql.ast.tree.Sort.SortOption.DEFAULT_DESC;
 import static org.opensearch.sql.ast.tree.Sort.SortOrder.ASC;
 import static org.opensearch.sql.ast.tree.Sort.SortOrder.DESC;
 
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.RelNode;
@@ -85,7 +89,10 @@ public class CalciteRelNodeVisitor extends AbstractNodeVisitor<RelNode, CalciteP
   public RelNode visitFilter(Filter node, CalcitePlanContext context) {
     visitChildren(node, context);
     RexNode condition = rexVisitor.analyze(node.getCondition(), context);
-    context.relBuilder.filter(condition);
+    AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {
+            context.relBuilder.filter(condition);
+            return null;
+    });
     return context.relBuilder.peek();
   }
 
