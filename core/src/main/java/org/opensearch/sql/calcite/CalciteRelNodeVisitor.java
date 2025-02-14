@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
@@ -188,7 +189,7 @@ public class CalciteRelNodeVisitor extends AbstractNodeVisitor<RelNode, CalciteP
         node.getGroupExprList().stream()
             .map(expr -> rexVisitor.analyze(expr, context))
             .collect(Collectors.toList());
-
+    //List<AggregateCall> aggregateCallList = new ArrayList<>();
     UnresolvedExpression span = node.getSpan();
     if (!Objects.isNull(span)) {
       RexNode spanRex = rexVisitor.analyze(span, context);
@@ -202,6 +203,7 @@ public class CalciteRelNodeVisitor extends AbstractNodeVisitor<RelNode, CalciteP
     //            aggList.stream().map(rex -> (MyAggregateCall) rex)
     //                .map(MyAggregateCall::getCall).collect(Collectors.toList()));
     context.relBuilder.aggregate(context.relBuilder.groupKey(groupByList), aggList);
+   // context.relBuilder.aggregate()
     return context.relBuilder.peek();
   }
 

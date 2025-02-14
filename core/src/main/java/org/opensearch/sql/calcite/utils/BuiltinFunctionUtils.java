@@ -5,10 +5,20 @@
 
 package org.opensearch.sql.calcite.utils;
 
+import java.util.Collections;
 import java.util.Locale;
+
+import org.apache.calcite.linq4j.tree.Types;
+import org.apache.calcite.schema.ScalarFunction;
+import org.apache.calcite.schema.impl.ScalarFunctionImpl;
+import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlLibraryOperators;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.validate.SqlUserDefinedFunction;
+import org.opensearch.sql.calcite.udf.MyIsNotNullFunction;
 
 public interface BuiltinFunctionUtils {
 
@@ -63,6 +73,17 @@ public interface BuiltinFunctionUtils {
       case "DATE_ADD":
         return SqlLibraryOperators.DATEADD;
         // TODO Add more, ref RexImpTable
+      case "IS NOT NULL":
+        final ScalarFunction udfLengthFunction = ScalarFunctionImpl.create(Types.lookupMethod(MyIsNotNullFunction.class, "eval", String.class));
+        SqlIdentifier udfLengthIdentifier = new SqlIdentifier(Collections.singletonList(MyIsNotNullFunction.functionName), null, SqlParserPos.ZERO, null);
+        final SqlUserDefinedFunction strLenOperator = new SqlUserDefinedFunction(
+                udfLengthIdentifier,
+                ReturnTypes.BOOLEAN,
+                null,
+                null,
+                null,
+                udfLengthFunction);
+        return strLenOperator;
       default:
         throw new IllegalArgumentException("Unsupported operator: " + op);
     }

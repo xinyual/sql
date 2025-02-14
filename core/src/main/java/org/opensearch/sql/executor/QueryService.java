@@ -39,7 +39,7 @@ import org.opensearch.sql.ast.tree.UnresolvedPlan;
 import org.opensearch.sql.calcite.CalcitePlanContext;
 import org.opensearch.sql.calcite.CalciteRelNodeVisitor;
 import org.opensearch.sql.calcite.OpenSearchSchema;
-import org.opensearch.sql.calcite.udf.allUDFs;
+import org.opensearch.sql.calcite.udf.MedianFunction;
 import org.opensearch.sql.common.response.ResponseListener;
 import org.opensearch.sql.datasource.DataSourceService;
 import org.opensearch.sql.planner.PlanContext;
@@ -95,9 +95,10 @@ public class QueryService {
                     SchemaPlus defaultSchema = connection
                             .getRootSchema();
 
-                    for (Map.Entry<String, Method> entry: allUDFs.ALLUDFS.entrySet()){
-                      defaultSchema.add(entry.getKey(), AccessController.doPrivileged((PrivilegedExceptionAction<ScalarFunction>) () -> ScalarFunctionImpl.create(entry.getValue())) );
-                    }
+                    //for (Map.Entry<String, Method> entry: allUDFs.ALLUDFS.entrySet()){
+                    //  defaultSchema.add(entry.getKey(), AccessController.doPrivileged((PrivilegedExceptionAction<ScalarFunction>) () -> ScalarFunctionImpl.create(entry.getValue())) );
+                    //}
+                    //defaultSchema.add("median", MedianFunction.class.getName());
                     final SchemaPlus finalSchema = defaultSchema.add(
                             OpenSearchSchema.OPEN_SEARCH_SCHEMA_NAME,
                             new OpenSearchSchema(dataSourceService));

@@ -15,10 +15,10 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
   public void init() throws IOException {
     super.init();
     Request request1 = new Request("PUT", "/test/_doc/1?refresh=true");
-    request1.setJsonEntity("{\"name\": \"hello\", \"age\": 20}");
+    request1.setJsonEntity("{\"name\": null, \"age\": 20, \"score\": 20.0}");
     client().performRequest(request1);
     Request request2 = new Request("PUT", "/test/_doc/2?refresh=true");
-    request2.setJsonEntity("{\"name\": \"world\", \"age\": 30}");
+    request2.setJsonEntity("{\"name\": \"world\", \"age\": 30, \"score\": 30.0}");
     client().performRequest(request2);
   }
 
@@ -54,6 +54,73 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
             + "}",
         actual);
   }
+
+  @Test
+  public void testSourceFieldQueryIs() {
+    String actual = execute("source=test | where isnotnull(name) | fields name");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"name\",\n"
+                    + "      \"type\": \"string\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      \"world\"\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 1,\n"
+                    + "  \"size\": 1\n"
+                    + "}",
+            actual);
+  }
+
+  @Test
+  public void testSourceFieldQueryCount() {
+    String actual = execute("source=test | stats Min(age) as median");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"median\",\n"
+                    + "      \"type\": \"double\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      25.0\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 1,\n"
+                    + "  \"size\": 1\n"
+                    + "}",
+            actual);
+  }
+
+  public void testSourceFieldQueryPercentile() {
+    String actual = execute("source=test | stats percentile_approx(score, 50)");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"median\",\n"
+                    + "      \"type\": \"double\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      25.0\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 1,\n"
+                    + "  \"size\": 1\n"
+                    + "}",
+            actual);
+  }
+
+
 
   @Test
   public void testFilterQuery1() {
