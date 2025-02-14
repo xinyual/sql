@@ -10,8 +10,8 @@ public class PercentileApproFunction {
 
 
     // Add values to the accumulator
-    public static PencentileApproAccumulator add(PencentileApproAccumulator acc, Object value) {
-        acc.add((double) value);
+    public static PencentileApproAccumulator add(PencentileApproAccumulator acc, Object value, Object percent) {
+        acc.add((float) value, (int) percent);
         return acc;
     }
 
@@ -26,11 +26,16 @@ public class PercentileApproFunction {
 
     public static class PencentileApproAccumulator  extends AVLTreeDigest {
         public static final double DEFAULT_COMPRESSION = 100.0;
-        private final double percent;
+        private double percent;
 
         public PencentileApproAccumulator() {
             super(DEFAULT_COMPRESSION);
-            this.percent = 100;
+            this.percent = 1.0;
+        }
+
+        public void add(float value, int percent) {
+            this.percent = percent / 100.0;
+            this.add(value);
         }
 
 

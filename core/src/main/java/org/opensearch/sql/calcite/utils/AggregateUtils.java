@@ -25,10 +25,14 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Optionality;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.Static;
+import org.opensearch.sql.analysis.ExpressionAnalyzer;
 import org.opensearch.sql.ast.expression.AggregateFunction;
+import org.opensearch.sql.ast.expression.UnresolvedArgument;
+import org.opensearch.sql.ast.expression.UnresolvedExpression;
 import org.opensearch.sql.calcite.CalcitePlanContext;
 import org.opensearch.sql.calcite.udf.MedianFunction;
 import org.opensearch.sql.calcite.udf.PercentileApproFunction;
+import org.opensearch.sql.expression.Expression;
 import org.opensearch.sql.expression.function.BuiltinFunctionName;
 
 import javax.annotation.Nullable;
@@ -41,7 +45,7 @@ import static org.opensearch.sql.expression.function.BuiltinFunctionName.PERCENT
 
 public interface AggregateUtils {
   static RelBuilder.AggCall translate(
-      AggregateFunction agg, RexNode field, CalcitePlanContext context) {
+      AggregateFunction agg, RexNode field, CalcitePlanContext context, List<RexNode> argList) {
     if (BuiltinFunctionName.ofAggregation(agg.getFuncName()).isEmpty())
       throw new IllegalStateException("Unexpected value: " + agg.getFuncName());
 
@@ -62,8 +66,9 @@ public interface AggregateUtils {
                 false, // requiresOver
                 Optionality.FORBIDDEN // requiresGroupOrder
         );
-        List<?> argList = agg.getArgList();
-        RexNode intLiteral2 =context.rexBuilder.makeExactLiteral(BigDecimal.valueOf(20));
+        //double doubleValue = ((List<Expression>)agg.getArgList()).get(0).valueOf().doubleValue();
+
+        //UnresolvedArgument argument = (UnresolvedArgument) argList.valueOf().doubleValue();
         /*
         AggregateCall percentileAggCall = AggregateCall.create(
                 percentileApproUDAF,
@@ -80,7 +85,7 @@ public interface AggregateUtils {
         return context.relBuilder.aggregateCall(percentileAggCall);
 
          */
-        return context.relBuilder.aggregateCall(percentileApproUDAF, List.of(field, intLiteral2));
+        return context.relBuilder.aggregateCall(percentileApproUDAF, List.of(field, argList.get(0)));
       case AVG:
         return context.relBuilder.avg(agg.getDistinct(), null, field);
       case COUNT:

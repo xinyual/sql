@@ -100,7 +100,7 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
   }
 
   public void testSourceFieldQueryPercentile() {
-    String actual = execute("source=test | stats percentile_approx(score, 50)");
+    String actual = execute("source=test | stats percentile_approx(score, 50), percentile_approx(score, 90)");
     assertEquals(
             "{\n"
                     + "  \"schema\": [\n"
