@@ -11,6 +11,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.impl.AggregateFunctionImpl;
+import org.apache.calcite.schema.impl.ReflectiveFunctionBase;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlKind;
@@ -22,18 +23,23 @@ import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.validate.SqlUserDefinedAggFunction;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Optionality;
+import org.apache.calcite.util.ReflectUtil;
+import org.apache.calcite.util.Static;
 import org.opensearch.sql.ast.expression.AggregateFunction;
 import org.opensearch.sql.calcite.CalcitePlanContext;
 import org.opensearch.sql.calcite.udf.MedianFunction;
 import org.opensearch.sql.calcite.udf.PercentileApproFunction;
 import org.opensearch.sql.expression.function.BuiltinFunctionName;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 
 import static org.opensearch.sql.expression.function.BuiltinFunctionName.PERCENTILE_APPROX;
 
 public interface AggregateUtils {
-
   static RelBuilder.AggCall translate(
       AggregateFunction agg, RexNode field, CalcitePlanContext context) {
     if (BuiltinFunctionName.ofAggregation(agg.getFuncName()).isEmpty())
@@ -56,7 +62,25 @@ public interface AggregateUtils {
                 false, // requiresOver
                 Optionality.FORBIDDEN // requiresGroupOrder
         );
-        return context.relBuilder.aggregateCall(percentileApproUDAF, field);
+        List<?> argList = agg.getArgList();
+        RexNode intLiteral2 =context.rexBuilder.makeExactLiteral(BigDecimal.valueOf(20));
+        /*
+        AggregateCall percentileAggCall = AggregateCall.create(
+                percentileApproUDAF,
+                false,
+                false,
+                false,
+                ImmutableList.of(),
+                ImmutableList.of(0),
+                -1,
+                null,
+                RelCollations.EMPTY,
+                field.getType(),
+                null);
+        return context.relBuilder.aggregateCall(percentileAggCall);
+
+         */
+        return context.relBuilder.aggregateCall(percentileApproUDAF, List.of(field, intLiteral2));
       case AVG:
         return context.relBuilder.avg(agg.getDistinct(), null, field);
       case COUNT:
