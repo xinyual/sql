@@ -15,7 +15,7 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
   public void init() throws IOException {
     super.init();
     Request request1 = new Request("PUT", "/test/_doc/1?refresh=true");
-    request1.setJsonEntity("{\"name\": null, \"age\": 20, \"score\": 20.0}");
+    request1.setJsonEntity("{\"name\": \"hello\", \"age\": 20, \"score\": 20.0}");
     client().performRequest(request1);
     Request request2 = new Request("PUT", "/test/_doc/2?refresh=true");
     request2.setJsonEntity("{\"name\": \"world\", \"age\": 30, \"score\": 30.0}");
@@ -28,6 +28,31 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
         "OpenSearch exception [type=index_not_found_exception, reason=no such index [unknown]]",
         IllegalStateException.class,
         () -> execute("source=unknown"));
+  }
+
+  @Test
+  public void testSource() {
+    String actual = execute("source=test | fields score");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"name\",\n"
+                    + "      \"type\": \"string\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      \"hello\"\n"
+                    + "    ],\n"
+                    + "    [\n"
+                    + "      \"world\"\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 2,\n"
+                    + "  \"size\": 2\n"
+                    + "}",
+            actual);
   }
 
   @Test
@@ -53,6 +78,49 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
             + "  \"size\": 2\n"
             + "}",
         actual);
+  }
+
+  @Test
+  public void testSourceFieldQueryLtrim() {
+    String actual = execute("source=test | eval lname=ltrim(name, 2)");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"name\",\n"
+                    + "      \"type\": \"string\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"score\",\n"
+                    + "      \"type\": \"double\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"age\",\n"
+                    + "      \"type\": \"long\"\n"
+                    + "    },\n"
+                    + "    {\n"
+                    + "      \"name\": \"lname\",\n"
+                    + "      \"type\": \"string\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      \"hello\",\n"
+                    + "      20.0,\n"
+                    + "      20,\n"
+                    + "      \"he\"\n"
+                    + "    ],\n"
+                    + "    [\n"
+                    + "      \"world\",\n"
+                    + "      30.0,\n"
+                    + "      30,\n"
+                    + "      \"wo\"\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 2,\n"
+                    + "  \"size\": 2\n"
+                    + "}",
+            actual);
   }
 
   @Test

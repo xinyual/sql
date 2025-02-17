@@ -12,12 +12,14 @@ import org.apache.calcite.linq4j.tree.Types;
 import org.apache.calcite.schema.ScalarFunction;
 import org.apache.calcite.schema.impl.ScalarFunctionImpl;
 import org.apache.calcite.sql.SqlIdentifier;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlLibraryOperators;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.validate.SqlUserDefinedFunction;
+import org.opensearch.sql.calcite.udf.LtrimFunction;
 import org.opensearch.sql.calcite.udf.MyIsNotNullFunction;
 
 public interface BuiltinFunctionUtils {
@@ -84,6 +86,17 @@ public interface BuiltinFunctionUtils {
                 null,
                 udfLengthFunction);
         return strLenOperator;
+      case "LTRIM":
+        final ScalarFunction udfLtrimFunction = ScalarFunctionImpl.create(Types.lookupMethod(LtrimFunction.class, "eval", String.class, int.class));
+        SqlIdentifier udfLtrimIdentifier = new SqlIdentifier(Collections.singletonList(LtrimFunction.FUNCTION_NAME), null, SqlParserPos.ZERO, null);
+        final SqlUserDefinedFunction LtrimOperator = new SqlUserDefinedFunction(
+                udfLtrimIdentifier,
+                ReturnTypes.CHAR,
+                null,
+                null,
+                null,
+                udfLtrimFunction);
+        return LtrimOperator;
       default:
         throw new IllegalArgumentException("Unsupported operator: " + op);
     }

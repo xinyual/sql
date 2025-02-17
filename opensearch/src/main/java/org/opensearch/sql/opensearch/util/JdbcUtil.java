@@ -26,6 +26,7 @@ public class JdbcUtil {
       case Types.DOUBLE:
       case Types.DECIMAL:
       case Types.NUMERIC:
+      case Types.REAL:
         return ExprCoreType.DOUBLE;
       case Types.FLOAT:
         return ExprCoreType.FLOAT;
@@ -62,7 +63,7 @@ public class JdbcUtil {
       case Types.NUMERIC:
         value = rs.getBigDecimal(i);
         break;
-      case Types.DOUBLE:
+      case Types.DOUBLE, Types.REAL:
         value = rs.getDouble(i);
         break;
       case Types.FLOAT:
