@@ -85,7 +85,7 @@ public interface AggregateUtils {
         return context.relBuilder.aggregateCall(percentileAggCall);
 
          */
-        return context.relBuilder.aggregateCall(percentileApproUDAF, List.of(field, argList.get(0)));
+        return context.relBuilder.aggregateCall(percentileApproUDAF, List.of(field, argList.getFirst()));
       case AVG:
         return context.relBuilder.avg(agg.getDistinct(), null, field);
       case COUNT:
