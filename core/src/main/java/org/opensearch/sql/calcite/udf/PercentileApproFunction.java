@@ -1,22 +1,29 @@
 package org.opensearch.sql.calcite.udf;
 
 import com.tdunning.math.stats.AVLTreeDigest;
+import org.apache.calcite.rex.RexNode;
 
-public class PercentileApproFunction {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-    public static PencentileApproAccumulator init() {
+public class PercentileApproFunction extends UserDefinedAggFunction<PercentileApproFunction.PencentileApproAccumulator> {
+    @Override
+    public PencentileApproAccumulator init() {
         return new PencentileApproAccumulator();
     }
 
-
     // Add values to the accumulator
-    public static PencentileApproAccumulator add(PencentileApproAccumulator acc, Object value, Object percent) {
-        acc.add((float) value, (int) percent);
+    @Override
+    public PencentileApproAccumulator add(PencentileApproAccumulator acc, Object... values) {
+        List<Object> allValues = Arrays.asList(values);
+        acc.add((float) allValues.get(0), (int) allValues.get(1));
         return acc;
     }
 
     // Calculate the percentile
-    public static Double result(PencentileApproAccumulator acc) {
+    @Override
+    public Object result(PencentileApproAccumulator acc) {
         if (acc.size() == 0) {
             return null;
         }
@@ -24,7 +31,7 @@ public class PercentileApproFunction {
     }
 
 
-    public static class PencentileApproAccumulator  extends AVLTreeDigest {
+    public static class PencentileApproAccumulator  extends AVLTreeDigest implements Accumulator {
         public static final double DEFAULT_COMPRESSION = 100.0;
         private double percent;
 

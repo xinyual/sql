@@ -8,12 +8,9 @@
 
 package org.opensearch.sql.executor;
 
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
-import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +21,7 @@ import org.apache.calcite.jdbc.Driver;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
-import org.apache.calcite.schema.ScalarFunction;
 import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.schema.impl.ScalarFunctionImpl;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
@@ -39,7 +34,6 @@ import org.opensearch.sql.ast.tree.UnresolvedPlan;
 import org.opensearch.sql.calcite.CalcitePlanContext;
 import org.opensearch.sql.calcite.CalciteRelNodeVisitor;
 import org.opensearch.sql.calcite.OpenSearchSchema;
-import org.opensearch.sql.calcite.udf.MedianFunction;
 import org.opensearch.sql.common.response.ResponseListener;
 import org.opensearch.sql.datasource.DataSourceService;
 import org.opensearch.sql.planner.PlanContext;
