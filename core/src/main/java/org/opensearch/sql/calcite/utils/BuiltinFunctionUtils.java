@@ -87,12 +87,12 @@ public interface BuiltinFunctionUtils {
                 udfLengthFunction);
         return strLenOperator;
       case "LTRIM":
-        final ScalarFunction udfLtrimFunction = ScalarFunctionImpl.create(Types.lookupMethod(LtrimFunction.class, "eval", String.class, int.class));
+        final ScalarFunction udfLtrimFunction = ScalarFunctionImpl.create(Types.lookupMethod(LtrimFunction.class, "eval", Object[].class));
         SqlIdentifier udfLtrimIdentifier = new SqlIdentifier(Collections.singletonList(LtrimFunction.FUNCTION_NAME), null, SqlParserPos.ZERO, null);
         final SqlUserDefinedFunction LtrimOperator = new SqlUserDefinedFunction(
                 udfLtrimIdentifier,
+                SqlKind.OTHER_FUNCTION,
                 ReturnTypes.CHAR,
-                null,
                 null,
                 null,
                 udfLtrimFunction);
