@@ -5,10 +5,23 @@
 
 package org.opensearch.sql.calcite.utils;
 
+import java.util.Collections;
 import java.util.Locale;
+
+import org.apache.calcite.linq4j.tree.Types;
+import org.apache.calcite.schema.ScalarFunction;
+import org.apache.calcite.schema.impl.ScalarFunctionImpl;
+import org.apache.calcite.sql.SqlIdentifier;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlLibraryOperators;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.validate.SqlUserDefinedFunction;
+import org.opensearch.sql.calcite.udf.LtrimFunction;
+
+import static org.opensearch.sql.calcite.utils.UserDefineFunctionUtils.TransferUserDefinedFunction;
 
 public interface BuiltinFunctionUtils {
 
@@ -63,6 +76,21 @@ public interface BuiltinFunctionUtils {
       case "DATE_ADD":
         return SqlLibraryOperators.DATEADD;
         // TODO Add more, ref RexImpTable
+      case "LTRIM":
+        /*
+        final ScalarFunction udfLtrimFunction = ScalarFunctionImpl.create(Types.lookupMethod(LtrimFunction.class, "eval", Object[].class));
+        SqlIdentifier udfLtrimIdentifier = new SqlIdentifier(Collections.singletonList("Ltrim"), null, SqlParserPos.ZERO, null);
+        final SqlUserDefinedFunction LtrimOperator = new SqlUserDefinedFunction(
+                udfLtrimIdentifier,
+                SqlKind.OTHER_FUNCTION,
+                ReturnTypes.CHAR,
+                null,
+                null,
+                udfLtrimFunction);
+        return LtrimOperator;
+
+         */
+        return TransferUserDefinedFunction(LtrimFunction.class, "Ltrim", ReturnTypes.CHAR);
       default:
         throw new IllegalArgumentException("Unsupported operator: " + op);
     }

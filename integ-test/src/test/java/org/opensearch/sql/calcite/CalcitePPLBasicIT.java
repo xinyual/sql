@@ -18,10 +18,10 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
   public void init() throws IOException {
     super.init();
     Request request1 = new Request("PUT", "/test/_doc/1?refresh=true");
-    request1.setJsonEntity("{\"name\": \"hello\", \"age\": 20}");
+    request1.setJsonEntity("{\"name\": \"hello\", \"age\": 20.0,  \"score\": 40.0}");
     client().performRequest(request1);
     Request request2 = new Request("PUT", "/test/_doc/2?refresh=true");
-    request2.setJsonEntity("{\"name\": \"world\", \"age\": 30}");
+    request2.setJsonEntity("{\"name\": \"world\", \"age\": 30.0, \"score\": 50.0}");
     client().performRequest(request2);
 
     loadIndex(Index.BANK);
@@ -34,6 +34,53 @@ public class CalcitePPLBasicIT extends CalcitePPLIntegTestCase {
         IllegalStateException.class,
         () -> execute("source=unknown"));
   }
+
+  public void testSourceFieldQueryPercentile() {
+    String actual = execute("source=test | stats percentile_approx(score, 50), percentile_approx(age, 90)");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"median\",\n"
+                    + "      \"type\": \"double\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      25.0\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 1,\n"
+                    + "  \"size\": 1\n"
+                    + "}",
+            actual);
+  }
+
+  @Test
+  public void testSourceLtrim() {
+    String actual = execute("source=test | eval lname=ltrim(name, 2)");
+    assertEquals(
+            "{\n"
+                    + "  \"schema\": [\n"
+                    + "    {\n"
+                    + "      \"name\": \"name\",\n"
+                    + "      \"type\": \"string\"\n"
+                    + "    }\n"
+                    + "  ],\n"
+                    + "  \"datarows\": [\n"
+                    + "    [\n"
+                    + "      \"hello\"\n"
+                    + "    ],\n"
+                    + "    [\n"
+                    + "      \"world\"\n"
+                    + "    ]\n"
+                    + "  ],\n"
+                    + "  \"total\": 2,\n"
+                    + "  \"size\": 2\n"
+                    + "}",
+            actual);
+  }
+
 
   @Test
   public void testSourceFieldQuery() {
