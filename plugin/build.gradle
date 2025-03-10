@@ -95,7 +95,6 @@ dependencyLicenses.enabled = false
 thirdPartyAudit.enabled = false
 
 configurations.all {
-    // conflict with spring-jcl
     resolutionStrategy.force "commons-logging:commons-logging:1.2"
     // enforce 2.12.6, https://github.com/opensearch-project/sql/issues/424
     resolutionStrategy.force "com.fasterxml.jackson.core:jackson-core:${versions.jackson}"
@@ -115,7 +114,14 @@ configurations.all {
     resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10"
     resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10"
     resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.10"
+    exclude group: 'org.apache.calcite'
 }
+
+tasks.named('bundlePlugin') {
+    dependsOn(':core:shadowJar')
+}
+
+
 
 configurations {
     zipArchive
