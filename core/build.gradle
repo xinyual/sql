@@ -29,11 +29,21 @@ plugins {
     id 'info.solidsoft.pitest' version '1.9.0'
     id 'java-test-fixtures'
     id 'com.diffplug.spotless' version '6.22.0'
-
+    id 'com.gradleup.shadow' version "8.3.6"
 }
 
 repositories {
     mavenCentral()
+}
+shadowJar {
+    dependencies {
+        include(dependency("org.apache.calcite:calcite-core:1.38.0"))
+        include(dependency('org.apache.calcite:calcite-linq4j:1.38.0'))
+    }
+    // Set archive name and destination
+    archiveClassifier.set(null)
+    destinationDirectory.set(file("$buildDir/libs"))
+    relocate 'com.google', 'org.opensearch.sql.repackage.com.google'
 }
 
 pitest {
@@ -58,6 +68,8 @@ dependencies {
     api group: 'com.tdunning', name: 't-digest', version: '3.3'
     api 'org.apache.calcite:calcite-core:1.38.0'
     api 'org.apache.calcite:calcite-linq4j:1.38.0'
+    implementation 'org.apache.calcite:calcite-core:1.38.0'
+    implementation 'org.apache.calcite:calcite-linq4j:1.38.0'
     api project(':common')
     implementation "com.github.seancfoley:ipaddress:5.4.2"
 
