@@ -5,6 +5,8 @@
 
 package org.opensearch.sql.opensearch.executor;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -108,15 +110,19 @@ public class OpenSearchExecutionEngine implements ExecutionEngine {
   @Override
   public void execute(
       RelNode rel, CalcitePlanContext context, ResponseListener<QueryResponse> listener) {
-    Connection connection = context.connection;
-    try {
-      RelRunner runner = connection.unwrap(RelRunner.class);
-      PreparedStatement statement = runner.prepareStatement(rel);
-      ResultSet result = statement.executeQuery();
-      printResultSet(result, listener);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+      Connection connection = context.connection;
+      try {
+        RelRunner runner = connection.unwrap(RelRunner.class);
+        PreparedStatement statement = runner.prepareStatement(rel);
+        ResultSet result = statement.executeQuery();
+        printResultSet(result, listener);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+        return null;
+    });
+
   }
 
   // for testing only
