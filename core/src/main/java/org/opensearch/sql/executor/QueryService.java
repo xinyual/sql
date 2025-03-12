@@ -8,6 +8,8 @@
 
 package org.opensearch.sql.executor;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -65,22 +67,26 @@ public class QueryService {
     try {
       try {
         // Use simple calcite schema since we don't compute tables in advance of the query.
-        CalciteSchema rootSchema = CalciteSchema.createRootSchema(true, false);
-        CalciteJdbc41Factory factory = new CalciteJdbc41Factory();
-        CalciteConnection connection =
-            factory.newConnection(
-                new Driver(), factory, "", new java.util.Properties(), rootSchema, null);
-        final SchemaPlus defaultSchema =
-            connection
-                .getRootSchema()
-                .add(
-                    OpenSearchSchema.OPEN_SEARCH_SCHEMA_NAME,
-                    new OpenSearchSchema(dataSourceService));
-        // Set opensearch schema as the default schema in config, otherwise we need to explicitly
-        // add schema path 'OpenSearch' before the opensearch table name
-        final FrameworkConfig config = buildFrameworkConfig(defaultSchema);
-        final CalcitePlanContext context = new CalcitePlanContext(config, connection);
-        executePlanByCalcite(analyze(plan, context), context, listener);
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+          CalciteSchema rootSchema = CalciteSchema.createRootSchema(true, false);
+          CalciteJdbc41Factory factory = new CalciteJdbc41Factory();
+          CalciteConnection connection =
+                  factory.newConnection(
+                          new Driver(), factory, "", new java.util.Properties(), rootSchema, null);
+          final SchemaPlus defaultSchema =
+                  connection
+                          .getRootSchema()
+                          .add(
+                                  OpenSearchSchema.OPEN_SEARCH_SCHEMA_NAME,
+                                  new OpenSearchSchema(dataSourceService));
+          // Set opensearch schema as the default schema in config, otherwise we need to explicitly
+          // add schema path 'OpenSearch' before the opensearch table name
+          final FrameworkConfig config = buildFrameworkConfig(defaultSchema);
+          final CalcitePlanContext context = new CalcitePlanContext(config, connection);
+          executePlanByCalcite(analyze(plan, context), context, listener);
+          return null;
+        });
+
       } catch (Exception e) {
         LOG.warn("Fallback to V2 query engine since got exception", e);
         executePlan(analyze(plan), PlanContext.emptyPlanContext(), listener);
