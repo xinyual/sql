@@ -82,6 +82,7 @@ dependencies {
     implementation 'org.apache.calcite:calcite-linq4j:1.38.0'
     implementation 'com.jayway.jsonpath:json-path:2.9.0'
     implementation 'org.codehaus.janino:commons-compiler:3.1.12'
+    implementation 'org.codehaus.janino:janino:3.1.12'
     //implementation 'org.apache.calcite.avatica:avatica-core:1.25.0'
     api project(':common')
     implementation "com.github.seancfoley:ipaddress:5.4.2"
