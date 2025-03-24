@@ -363,21 +363,35 @@ run {
 }
 
 def compileOnlyResolveableFiles = project.configurations.getByName(CompileOnlyResolvePlugin.RESOLVEABLE_COMPILE_ONLY_CONFIGURATION_NAME).files
-shadowJar {
-    configurations = [project.configurations.runtimeClasspath]
-    exclude { details ->
-        def file = details.file
-        return compileOnlyResolveableFiles.contains(file)
+boolean isTestTask = gradle.startParameter.taskNames.any { taskName ->
+    // Match standalone "test" task
+    if (taskName == 'test') return true
+
+    // Match path-qualified task ending with ":test"
+    // (but not ":sometest" or ":integTest" etc.)
+    if (taskName.contains(':')) {
+        def parts = taskName.split(':')
+        return parts.length > 0 && parts[parts.length - 1] == 'test'
     }
+}
+if (!isTestTask) {
+    println("define shadow jar")
+    shadowJar {
+        configurations = [project.configurations.runtimeClasspath]
+        exclude { details ->
+            def file = details.file
+            return compileOnlyResolveableFiles.contains(file)
+        }
 
-    destinationDirectory = file("${project.buildDir}/distributions")
-    archiveClassifier.set(null)
+        destinationDirectory = file("${project.buildDir}/distributions")
+        archiveClassifier.set(null)
 
-    exclude 'META-INF/maven/com.google.guava/**'
-    exclude 'com/google/thirdparty/**'
-    exclude 'org/opensearch/jobscheduler/**'
-    exclude 'org/apache/lucene/**'
+        exclude 'META-INF/maven/com.google.guava/**'
+        exclude 'com/google/thirdparty/**'
+        exclude 'org/opensearch/jobscheduler/**'
+        exclude 'org/apache/lucene/**'
 
-    relocate 'com.google.common', 'shaded.com.google.common'
-    relocate 'org.joda.time', 'shaded.org.joda.time'
+        relocate 'com.google.common', 'shaded.com.google.common'
+        relocate 'org.joda.time', 'shaded.org.joda.time'
+    }
 }
