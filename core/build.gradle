@@ -29,12 +29,13 @@ plugins {
     id 'info.solidsoft.pitest' version '1.9.0'
     id 'java-test-fixtures'
     id 'com.diffplug.spotless' version '6.22.0'
-    id 'com.gradleup.shadow' version "8.3.6"
+    id 'com.gradleup.shadow'
 }
 
 repositories {
     mavenCentral()
 }
+
 shadowJar {
     dependencies {
         include(dependency("org.apache.calcite:calcite-core:1.38.0"))
@@ -44,6 +45,10 @@ shadowJar {
     archiveClassifier.set(null)
     destinationDirectory.set(file("$buildDir/libs"))
     relocate 'com.google', 'org.opensearch.sql.repackage.com.google'
+}
+
+tasks.named('shadowJar') {
+    dependsOn(':common:shadowJar')
 }
 
 pitest {

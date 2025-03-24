@@ -110,8 +110,9 @@ configurations.all {
     resolutionStrategy.force "joda-time:joda-time:2.10.12"
     resolutionStrategy.force "org.slf4j:slf4j-api:1.7.36"
     resolutionStrategy.force "org.apache.httpcomponents:httpcore:4.4.15"
-    resolutionStrategy.force "org.apache.httpcomponents:httpclient:4.5.13"
+    resolutionStrategy.force "org.apache.httpcomponents:httpclient:4.5.14"
     resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10"
+    exclude group: 'org.apache.calcite'
     resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10"
     resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.10"
     exclude group: 'org.apache.calcite'
@@ -166,7 +167,7 @@ dependencies {
     api project(':opensearch')
     api project(':prometheus')
     api project(':datasources')
-    api project(':spark')
+//    api project(':spark')
     api project(':async-query')
 
     testImplementation group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.14.19'
@@ -323,3 +324,4 @@ testClusters.integTest {
 run {
     useCluster testClusters.integTest
 }
+
