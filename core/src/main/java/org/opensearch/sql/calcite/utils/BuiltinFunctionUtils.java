@@ -246,18 +246,12 @@ public interface BuiltinFunctionUtils {
           PostprocessForUDTFunction.class, "POSTPROCESS", dateInference
         );
         //return SqlLibraryOperators.DATE;
-      case "DATE_ADD":
+      case "DATE_ADD", "DATE_SUB":
         return TransferUserDefinedFunction(
-            DateAddSubFunction.class, "DATE_ADD", timestampInference);
-      case "ADDDATE":
+            DateAddSubFunction.class, capitalOP, timestampInference);
+      case "ADDDATE", "SUBDATE":
         return TransferUserDefinedFunction(
-            DateAddSubFunction.class, "ADDDATE", DateAddSubFunction.getReturnTypeForAddOrSubDate());
-      case "SUBDATE":
-        return TransferUserDefinedFunction(
-            DateAddSubFunction.class, "SUBDATE", DateAddSubFunction.getReturnTypeForAddOrSubDate());
-      case "DATE_SUB":
-        return TransferUserDefinedFunction(
-            DateAddSubFunction.class, "DATE_SUB", timestampInference);
+            DateAddSubFunction.class, capitalOP, DateAddSubFunction.getReturnTypeForAddOrSubDate());
       case "ADDTIME", "SUBTIME":
         return TransferUserDefinedFunction(
             TimeAddSubFunction.class,
@@ -614,10 +608,8 @@ public interface BuiltinFunctionUtils {
         RexNode type1 = context.rexBuilder.makeFlag(arg1Type);
         RexNode isAdd = context.rexBuilder.makeLiteral(true);
         return List.of(argList.getFirst(), type0, argList.get(1), type1, isAdd);
-      case "ADDDATE":
-        return transformAddOrSubDateArgs(argList, context.rexBuilder, true);
-      case "SUBDATE":
-        return transformAddOrSubDateArgs(argList, context.rexBuilder, false);
+      case "ADDDATE", "SUBDATE":
+        return transformAddOrSubDateArgs(argList, context.rexBuilder, capitalOP.equals("ADDDATE"));
       case "SUBTIME":
         List<RexNode> subTimeArgs = transformTimeManipulationArgs(argList, context.rexBuilder);
         subTimeArgs.add(context.rexBuilder.makeLiteral(false));
@@ -807,7 +799,9 @@ public interface BuiltinFunctionUtils {
     List<RexNode> addOrSubDateRealInput =
         transformDateManipulationArgs(addOrSubDateArgs, rexBuilder);
     addOrSubDateRealInput.add(rexBuilder.makeLiteral(isAdd));
-    if (argList.getFirst().getType().getSqlTypeName() == SqlTypeName.DATE
+    RelDataType arg0Type = argList.getFirst().getType();
+    if ((arg0Type.getSqlTypeName() == SqlTypeName.DATE
+            || arg0Type instanceof ExprDateType)
         && (addType == SqlTypeName.BIGINT
             || addType == SqlTypeName.DECIMAL
             || addType == SqlTypeName.INTEGER)) {

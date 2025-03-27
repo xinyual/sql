@@ -763,7 +763,7 @@ public class CalcitePPLDateTimeBuiltinFunctionIT extends CalcitePPLIntegTestCase
         executeQuery(
             String.format(
                 "source=%s | head 1 | eval d1 = SYSDATE(), d2 = SYSDATE(3), d3 = SYSDATE(6)|eval"
-                    + " df1 = DATE_FORMAT(d1, '%%Y-%%m-%%d %%T'), df2 = DATE_FORMAT(d2,"
+                    + " df1 = DATE_FORMAT(d1, '%%Y-%%m-%%d %%T.%%f'), df2 = DATE_FORMAT(d2,"
                     + " '%%Y-%%m-%%d %%T.%%f'), df3 = DATE_FORMAT(d3, '%%Y-%%m-%%d %%T.%%f') |"
                     + " fields d1, d2, d3, df1, df2, df3",
                 TEST_INDEX_DATE_FORMATS));
@@ -776,20 +776,20 @@ public class CalcitePPLDateTimeBuiltinFunctionIT extends CalcitePPLIntegTestCase
         schema("df2", "string"),
         schema("df3", "string"));
 
-    // TODO: df3 should show 6-precision microseconds. But it it not implemented yet, neither
-    // does the pattern detect it
-    final String DATETIME_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}$";
-    final String DATETIME_P0_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.000000$";
-    final String DATETIME_P3_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}000$";
-    final String DATETIME_P6_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}$";
+    final String DATETIME_P0_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}$";
+    final String DATETIME_P3_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}$";
+    final String DATETIME_P6_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,6}$";
+    final String DATETIME_P0_FMT_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.000000$";
+    final String DATETIME_P3_FMT_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}000$";
+    final String DATETIME_P6_FMT_PATTERN = "^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{6}$";
     verify(
         actual.getJSONArray("datarows").getJSONArray(0),
-        Matchers.matchesPattern(DATETIME_PATTERN),
-        Matchers.matchesPattern(DATETIME_PATTERN),
-        Matchers.matchesPattern(DATETIME_PATTERN),
-        Matchers.matchesPattern(DATETIME_PATTERN),
+        Matchers.matchesPattern(DATETIME_P0_PATTERN),
         Matchers.matchesPattern(DATETIME_P3_PATTERN),
-        Matchers.matchesPattern(DATETIME_P6_PATTERN));
+        Matchers.matchesPattern(DATETIME_P6_PATTERN),
+        Matchers.matchesPattern(DATETIME_P0_FMT_PATTERN),
+        Matchers.matchesPattern(DATETIME_P3_FMT_PATTERN),
+        Matchers.matchesPattern(DATETIME_P6_FMT_PATTERN));
   }
 
   /**
@@ -1185,15 +1185,15 @@ public class CalcitePPLDateTimeBuiltinFunctionIT extends CalcitePPLIntegTestCase
     JSONObject actual =
         executeQuery(
             String.format(
-                "source=%s | eval r1 = convert_tz('2008-05-15 12:00:00', '+00:00', '+10:00') | eval"
+                "source=%s | head 1 | eval r1 = convert_tz('2008-05-15 12:00:00', '+00:00', '+10:00') | eval"
                     + " r2 = convert_tz(TIMESTAMP('2008-05-15 12:00:00'), '+00:00', '+10:00') |"
-                    + " eval r3 = convert_tz(strict_date_optional_time_nanos, '+00:00', '+10:00') |"
+                    + " eval r3 = convert_tz(date_time, '+00:00', '+10:00') |"
                     + " eval r4 = convert_tz('2008-05-15 12:00:00', '-00:00', '+00:00') | eval r5 ="
                     + " convert_tz('2008-05-15 12:00:00', '+10:00', '+11:00') | eval r6 ="
                     + " convert_tz('2021-05-12 11:34:50', '-08:00', '+09:00') | eval r7 ="
                     + " convert_tz('2021-05-12 11:34:50', '-12:00', '+12:00') | eval r8 ="
                     + " convert_tz('2021-05-12 13:00:00', '+09:30', '+05:45') | fields r1, r2, r3,"
-                    + " r4, r5, r6, r7, r8| head 1",
+                    + " r4, r5, r6, r7, r8",
                 TEST_INDEX_DATE_FORMATS));
     verifySchema(
         actual,
