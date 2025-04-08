@@ -53,7 +53,7 @@ import org.opensearch.sql.ast.expression.subquery.InSubquery;
 import org.opensearch.sql.ast.expression.subquery.ScalarSubquery;
 import org.opensearch.sql.ast.tree.UnresolvedPlan;
 import org.opensearch.sql.calcite.type.ExprSqlType;
-import org.opensearch.sql.calcite.udf.datetimeUDF.PostprocessDateToStringFunction;
+import org.opensearch.sql.calcite.udf.datetimeUDF.CastToTimeStampFunction;
 import org.opensearch.sql.calcite.utils.BuiltinFunctionUtils;
 import org.opensearch.sql.calcite.utils.OpenSearchTypeFactory;
 import org.opensearch.sql.calcite.utils.PlanUtils;
@@ -203,9 +203,7 @@ public class CalciteRexNodeVisitor extends AbstractNodeVisitor<RexNode, CalciteP
     if (whetherCompareByTime) {
       SqlOperator postToStringNode =
           TransferUserDefinedFunction(
-              PostprocessDateToStringFunction.class,
-              "PostprocessDateToString",
-              VARCHAR_FORCE_NULLABLE);
+              CastToTimeStampFunction.class, "CastToTimestamp", VARCHAR_FORCE_NULLABLE);
       RexNode transferredStringNode =
           context.rexBuilder.makeCall(
               postToStringNode,
