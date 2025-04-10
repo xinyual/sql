@@ -14,7 +14,7 @@ import java.util.Objects;
 import org.opensearch.sql.calcite.udf.UserDefinedFunction;
 import org.opensearch.sql.expression.function.FunctionProperties;
 
-public class PostprocessDateToStringFunction implements UserDefinedFunction {
+public class CastToTimeStampFunction implements UserDefinedFunction {
   @Override
   public Object eval(Object... args) {
     Object candidate = args[0];
