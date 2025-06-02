@@ -31,7 +31,7 @@ plugins {
     id 'jacoco'
     id 'opensearch.opensearchplugin'
     id 'com.diffplug.spotless' version '6.22.0'
-    id 'com.gradleup.shadow'
+    id 'com.gradleup.shadow' version '8.3.6'
 }
 
 apply plugin: 'opensearch.pluginzip'
@@ -124,6 +124,7 @@ configurations {
 
 compileJava {
     options.compilerArgs.addAll(["-processor", 'lombok.launch.AnnotationProcessorHider$AnnotationProcessor'])
+    options.release.set(11)
 }
 
 compileTestJava {

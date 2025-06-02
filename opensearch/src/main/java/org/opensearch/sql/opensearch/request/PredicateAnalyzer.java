@@ -287,17 +287,17 @@ public class PredicateAnalyzer {
           if (call.getOperator().getName().equalsIgnoreCase("CONTAINS")) {
             List<Expression> operands = visitList(call.getOperands());
             String query =
-                    convertQueryString(
-                            operands.subList(0, operands.size() - 1), operands.get(operands.size() - 1));
+                convertQueryString(
+                    operands.subList(0, operands.size() - 1), operands.get(operands.size() - 1));
             return QueryExpression.create(new NamedFieldExpression()).queryString(query);
           }
           // fall through
 
         default:
-          String message = format(Locale.ROOT, "Unsupported syntax [%s] for call: [%s]", syntax, call);
+          String message =
+              format(Locale.ROOT, "Unsupported syntax [%s] for call: [%s]", syntax, call);
           throw new PredicateAnalyzerException(message);
       }
-
     }
 
     private static String convertQueryString(List<Expression> fields, Expression query) {

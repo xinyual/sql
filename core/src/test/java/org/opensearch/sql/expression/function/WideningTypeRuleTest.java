@@ -59,7 +59,7 @@ class WideningTypeRuleTest {
           .put(STRING, TIMESTAMP, 1)
           .put(STRING, DATE, 1)
           .put(STRING, TIME, 1)
-              .put(STRING, IP, 1)
+          .put(STRING, IP, 1)
           .put(STRING, DATETIME, 1)
           .put(DATE, DATETIME, 1)
           .put(TIME, DATETIME, 1)

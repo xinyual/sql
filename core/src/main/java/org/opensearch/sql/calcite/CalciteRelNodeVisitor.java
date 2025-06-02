@@ -129,7 +129,8 @@ public class CalciteRelNodeVisitor extends AbstractNodeVisitor<RelNode, CalciteP
     if (expr instanceof SubqueryExpression) {
       return true;
     }
-    if (expr instanceof Let l) {
+    if (expr instanceof Let) {
+      Let l = (Let) expr;
       return containsSubqueryExpression(l.getExpression());
     }
     for (Node child : expr.getChild()) {
@@ -166,10 +167,12 @@ public class CalciteRelNodeVisitor extends AbstractNodeVisitor<RelNode, CalciteP
     List<String> originalNames = context.relBuilder.peek().getRowType().getFieldNames();
     List<String> newNames = new ArrayList<>(originalNames);
     for (org.opensearch.sql.ast.expression.Map renameMap : node.getRenameList()) {
-      if (renameMap.getTarget() instanceof Field t) {
+      if (renameMap.getTarget() instanceof Field) {
+        Field t = (Field) renameMap.getTarget();
         String newName = t.getField().toString();
         RexNode check = rexVisitor.analyze(renameMap.getOrigin(), context);
-        if (check instanceof RexInputRef ref) {
+        if (check instanceof RexInputRef) {
+          RexInputRef ref = (RexInputRef) check;
           newNames.set(ref.getIndex(), newName);
         } else {
           throw new SemanticCheckException(

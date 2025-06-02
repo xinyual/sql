@@ -116,7 +116,7 @@ public class ExprValueUtilsTest {
           ExprCoreType.FLOAT,
           ExprCoreType.DOUBLE);
   private static final List<ExprCoreType> nonNumberTypes =
-          Arrays.asList(IP, STRING, BOOLEAN, ARRAY, STRUCT);
+      Arrays.asList(IP, STRING, BOOLEAN, ARRAY, STRUCT);
   private static List<ExprCoreType> dateAndTimeTypes =
       Arrays.asList(DATE, TIME, DATETIME, TIMESTAMP, INTERVAL);
   private static List<ExprCoreType> allTypes =
