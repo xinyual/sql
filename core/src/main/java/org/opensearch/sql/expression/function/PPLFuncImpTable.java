@@ -5,43 +5,6 @@
 
 package org.opensearch.sql.expression.function;
 
-import com.google.common.collect.ImmutableMap;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.fun.SqlLibraryOperators;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.fun.SqlTrimFunction.Flag;
-import org.apache.calcite.sql.type.CompositeOperandTypeChecker;
-import org.apache.calcite.sql.type.ImplicitCastOperandTypeChecker;
-import org.apache.calcite.sql.type.OperandTypes;
-import org.apache.calcite.sql.type.SameOperandTypeChecker;
-import org.apache.calcite.sql.type.SqlOperandTypeChecker;
-import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.sql.validate.SqlUserDefinedFunction;
-import org.apache.commons.lang3.function.TriFunction;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.opensearch.sql.calcite.utils.OpenSearchTypeFactory;
-import org.opensearch.sql.exception.ExpressionEvaluationException;
-import org.opensearch.sql.executor.QueryType;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static org.apache.calcite.sql.SqlJsonConstructorNullClause.NULL_ON_NULL;
 import static org.apache.calcite.sql.type.SqlTypeFamily.IGNORE;
 import static org.opensearch.sql.calcite.utils.OpenSearchTypeFactory.getLegacyTypeName;
@@ -212,6 +175,42 @@ import static org.opensearch.sql.expression.function.BuiltinFunctionName.WEEK_OF
 import static org.opensearch.sql.expression.function.BuiltinFunctionName.XOR;
 import static org.opensearch.sql.expression.function.BuiltinFunctionName.YEAR;
 import static org.opensearch.sql.expression.function.BuiltinFunctionName.YEARWEEK;
+
+import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlLibraryOperators;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.fun.SqlTrimFunction.Flag;
+import org.apache.calcite.sql.type.CompositeOperandTypeChecker;
+import org.apache.calcite.sql.type.ImplicitCastOperandTypeChecker;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.SameOperandTypeChecker;
+import org.apache.calcite.sql.type.SqlOperandTypeChecker;
+import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.validate.SqlUserDefinedFunction;
+import org.apache.commons.lang3.function.TriFunction;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.opensearch.sql.calcite.utils.OpenSearchTypeFactory;
+import org.opensearch.sql.exception.ExpressionEvaluationException;
+import org.opensearch.sql.executor.QueryType;
 
 public class PPLFuncImpTable {
   private static final Logger logger = LogManager.getLogger(PPLFuncImpTable.class);
