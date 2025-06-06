@@ -1,0 +1,119 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * Licensed to Elasticsearch under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+plugins {
+    id 'java-library'
+    id "io.freefair.lombok"
+    id 'jacoco'
+    id 'antlr'
+    id 'com.diffplug.spotless' version '6.22.0'
+}
+
+generateGrammarSource {
+    arguments += ['-visitor', '-package', 'org.opensearch.sql.ppl.antlr.parser']
+    source = sourceSets.main.antlr
+    outputDirectory = file("build/generated-src/antlr/main/org/opensearch/sql/ppl/antlr/parser")
+}
+
+configurations {
+    compile {
+        extendsFrom = extendsFrom.findAll { it != configurations.antlr }
+    }
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.7.1"
+
+    runtimeOnly group: 'org.reflections', name: 'reflections', version: '0.9.12'
+
+    implementation "org.antlr:antlr4-runtime:4.7.1"
+    implementation group: 'com.google.guava', name: 'guava', version: "${guava_version}"
+    api group: 'org.json', name: 'json', version: '20231013'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version:"${versions.log4j}"
+    api project(':common')
+    api project(':core')
+    api project(':protocol')
+
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: '2.1'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.7.0'
+    testImplementation group: 'org.apache.calcite', name: 'calcite-testkit', version: '1.38.0'
+    testImplementation(testFixtures(project(":core")))
+}
+
+spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**', 'src/main/gen/**'
+        }
+        importOrder()
+//        licenseHeader("/*\n" +
+//                " * Copyright OpenSearch Contributors\n" +
+//                " * SPDX-License-Identifier: Apache-2.0\n" +
+//                " */\n\n")
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        googleJavaFormat('1.17.0').reflowLongStrings().groupArtifact('com.google.googlejavaformat:google-java-format')
+    }
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+jacocoTestReport {
+    reports {
+        html.required = true
+        xml.required = true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/antlr/parser/**'])
+        }))
+    }
+}
+test.finalizedBy(project.tasks.jacocoTestReport)
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.9
+            }
+
+        }
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/antlr/parser/**'])
+        }))
+    }
+}
+check.dependsOn jacocoTestCoverageVerification
