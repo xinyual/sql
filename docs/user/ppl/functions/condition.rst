@@ -382,6 +382,8 @@ The relative string can be one of the following formats:
    - `+1d@m` → `2025-05-29 14:28:00`  
    - `-3M+1y@M` → `2026-02-01 00:00:00`
 
+Read more details [here](https://github.com/opensearch-project/opensearch-spark/blob/main/docs/ppl-lang/functions/ppl-datetime.md#relative_timestamp)
+
 
 Argument type: relative_string:STRING, field: TIMESTAMP
 
